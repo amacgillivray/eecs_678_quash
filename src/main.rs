@@ -1,5 +1,9 @@
+mod lexer;
+
 use std::io;
 use io::Write;
+use lexer::Token;
+use logos::Logos;
 
 fn main() {
     let mut buffer = String::new();
@@ -7,15 +11,19 @@ fn main() {
     loop {
         print!("$ ");
         io::stdout().flush()
-            .expect("Unable to flush stdout");
+            .expect("flush stdout");
 
         io::stdin().read_line(&mut buffer)
-            .expect("Failed to read user input");
+            .expect("read user input");
 
-        if buffer == "quit\n" || buffer == "exit\n" {
-            break;
+        // Perform lexical analysis of input string
+        let mut lex = Token::lexer(&buffer);
+        while let Some(_) = lex.next() {
+            println!("{}", lex.slice())
         }
 
+        // Clear buffer string
+        // More efficient than deleting and reallocating every loop
         buffer.clear();
     }
 }
