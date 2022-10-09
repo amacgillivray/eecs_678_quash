@@ -1,13 +1,42 @@
-use std::io::Write;
+use std::io;
+use io::Write;
 
 fn main() {
-    while let 1 = 1 {
+    let mut buffer = String::new();
+
+    loop {
         print!("$ ");
-        std::io::stdout().flush()
+        io::stdout().flush()
             .expect("Unable to flush stdout");
 
-        let mut input = String::new();
-        std::io::stdin().read_line(&mut input)
-            .expect("Failed to take input");
+        io::stdin().read_line(&mut buffer)
+            .expect("Failed to read user input");
+
+        if buffer == "quit\n" || buffer == "exit\n" {
+            break;
+        }
+
+        buffer.clear();
     }
 }
+/* Commands to implement
+    * Executables
+        Absolute, relative, or PATH
+        Background execution
+    * <, >, >>, 
+    * pipes
+    * # comments
+    * echo command
+    * export command
+    * cd command
+    * pwd command
+    * quit and exit
+    * jobs
+    * kill
+
+Extra credit
+    * Pipes and redirects can be mixed
+    * Pipes and redirects work with built-in commands
+    * Append redirection
+
+*/
