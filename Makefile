@@ -1,3 +1,4 @@
+.PHONY: quash
 quash:
 	cargo build
 	cp ./target/debug/quash ./quash
