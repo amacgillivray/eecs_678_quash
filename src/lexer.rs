@@ -1,57 +1,189 @@
 use logos::Logos;
+use std::str;
 
-#[derive(Logos, PartialEq)]
-pub enum Token {
+#[derive(Logos, PartialEq, PartialOrd, Clone, Debug)]
+pub enum Dictionary {
 
-    #[regex("&")]
-    AMPERSAND,
+    // Text
 
-    #[regex("<")]
-    LANGLE,
-
-    #[regex(">")]
-    RANGLE,
-
-    #[regex(">>")]
-    DRANGLE,
-
-    #[token("[|]")]
-    PIPE,
+    #[regex("[^ \n\r\t]+")] // arguments, or executable
+    Text,
 
     // Commands
 
-    #[regex("echo")]
+    #[regex("echo")]  // Echos the argument to terminal
     Echo,
 
-    #[regex("export")]
+    #[regex("export")] // Set val of environment variable
     Export,
 
-    #[regex("cd")]
+    #[regex("cd")] // Change directory
     CD,
 
-    #[regex("pwd")]
+    #[regex("pwd")] // Echo current directory name
     PWD,
 
-    #[regex("quit|exit")]
+    #[regex("quit|exit")] // Exit
     Quit,
 
-    #[regex("kill")]
+    #[regex("kill")] // Kill a process
     Kill,
 
-    #[regex("jobs")]
+    #[regex("jobs")] // Show all active jobs in quash
     Jobs,
 
-    // Misc
+    // Operators
 
-    #[regex("#.+\n", logos::skip)]
+    #[regex("<")] // Take input from file
+    LANGLE,
+
+    #[regex(">")] // Write to file
+    RANGLE,
+
+    #[regex(">>")] // Append to file
+    DRANGLE,
+
+    #[token("[|]")] // Pipes output of one to input of next
+    PIPE,
+
+    #[regex("&")] // Run in background
+    AMPERSAND,
+
+    // Skipped / Error
+
+    #[regex("#.+\n", logos::skip)] // Skip line
     Comment,
 
-    #[regex("[^ \n\r\t]+")]
-    Text,
-
-    #[regex("[ \n\t\r]+", logos::skip)]
+    #[regex("[ \n\t\r]+", logos::skip)] // Skip ws
     Whitespace,
 
-    #[error]
+    #[error] // Oops! Bad syntax
     Error
 }
+
+#[derive(Clone, Debug)]
+pub struct Token {
+    pub span : String, 
+    pub cat  : Option<Dictionary>,
+}
+impl Token {
+    pub fn new ( w : &str, c : Option<Dictionary> ) -> Token
+    {
+        // let mut lex = Dictionary::lexer(&w);
+        // let Some(_) = lex.next();
+        return Token {
+            span:w.to_string(),
+            cat:c,
+        }
+    }
+
+    // pub fn new ( w : &str, c : Option<Dictionary> ) -> Token
+    // {
+    //     return Token {
+    //         span:w,
+    //         cat:c,
+    //     }
+    // }
+}
+
+#[derive(Debug)]
+pub struct Command 
+{
+    foreground : bool,
+    tokens : Vec<Token>,
+    token_i : usize,
+    segments : Vec<Command>,
+    segment_i : usize,
+}
+
+impl Command 
+{
+
+    // Construct a new command
+    pub fn new () -> Command 
+    {
+        return Command { 
+            foreground: true, 
+            tokens: Vec::new(), 
+            token_i : 0,
+            segments: Vec::new(),
+            segment_i:0,
+        };
+    }
+
+    fn new_sub( base : & Command, segtkn : & Vec<Token> ) -> Command
+    {
+        return Command {
+            foreground: base.foreground,
+            tokens : segtkn.clone(),
+            token_i : 0,
+            segments : Vec::new(),
+            segment_i : 0,
+        };
+    }
+
+    pub fn add_token( &mut self, w : &str, c : Option<Dictionary> )
+    {
+        let tkn : Token = Token::new(w, c);
+        self.tokens.push(tkn);
+        println!("Total tokens pushed: {}", self.tokens.len());
+    }
+
+    pub fn execute( &mut self ) 
+    {
+        println!("Executing!");
+        self.parse();
+        while self.segment_i < self.segments.len()
+        {
+            let mut segstr : String = String::new(); 
+            let mut i = 0;
+            while i < self.segments[self.segment_i].tokens.len()
+            {
+                segstr.push_str(self.segments[self.segment_i].tokens[i].span.as_str());
+                i = i+1;
+            }
+            println!("Command Segment {}:", self.segment_i);
+            println!("\t{}", segstr);
+            self.segment_i = self.segment_i+1;
+        }
+        self.segment_i = 0;
+    }
+
+    fn parse( &mut self )
+    {
+        println!("Parsing!");
+        let mut seg : Vec<Token> = Vec::new();
+        let mut sev : Option<Dictionary> = Some(Dictionary::Text);
+        while self.token_i < self.tokens.len()
+        {
+            seg.push(self.tokens[self.token_i].clone());
+            println!("Token: {}", self.tokens[self.token_i].span);
+            println!("Type:  {:#?}", self.tokens[self.token_i].cat);
+            
+            // trying to figure out why it doesnt break after a pipe -- 
+            //  test case "A test | B >> c.txt &"
+            // if seg.len() == 1 && self.tokens[self.token_i].cat == Some(Dictionary::Text)
+            // {
+            //     self.tokens[self.token_i].cat = Some(Dictionary::)
+            // }
+
+            if self.tokens[self.token_i].cat > sev
+            {
+                let sub : Command = Command::new_sub(self, &seg);
+                self.segments.push(sub);
+                seg.clear();
+                sev = Some(Dictionary::Text);
+            } else {
+                // Set severity flag and then increment i
+                sev = self.tokens[self.token_i].cat.clone(); 
+            }
+            self.token_i = self.token_i+1;
+        }
+
+        // While token_i < sizeof tokens, read tokens 
+        // into a new vector of tokens that we can pass 
+        //  to a sub-command
+        // Put those into a new "segment"
+    }    
+}
+ 
