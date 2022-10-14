@@ -22,14 +22,14 @@ pub enum Dictionary {
     #[regex("pwd")] // Echo current directory name
     PWD,
 
-    #[regex("quit|exit")] // Exit
-    Quit,
-
     #[regex("kill")] // Kill a process
     Kill,
 
     #[regex("jobs")] // Show all active jobs in quash
     Jobs,
+
+    #[regex("quit|exit")] // Exit
+    Quit,
 
     // Operators
 
