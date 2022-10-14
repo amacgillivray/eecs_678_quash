@@ -1,27 +1,40 @@
-use lexer::Dictionary;
+use logos::Logos;
+use crate::lexer::Dictionary;
 
-/* Parser
-Program: Pipe
-       | Pipe &
-Pipe: IO
-    | IO | IO
-IO: CMD
-  | CMD > Text
-  | CMD >> Text
-  | CMD < Text
-CMD: Exec
-   | echo
-   | [etc.]
+struct Command {
+    keyword: Token, // Type of command,
+    args: Vec<Token>,
+    read: Option<Token>,
+    write: Option<Token>,
+    append: Option<Token>,
+}
 
-Each category in CMD:
-= [keyword]
-| [cmd] text
+struct Token {
+    str: String,
+    cat: Dictionary,
+}
 
+pub struct Job {
+    foreground: bool,
+    cmds: Vec<Command> // Commands separated by pipes
+}
 
+impl Job {
+    pub fn parse(str: &String) {
+        let mut lex = Dictionary::lexer(&str);
+        while let Some(cat) = lex.next() {
+            let token = Token{
+                str: lex.slice().to_string(), 
+                cat: cat
+            };
 
-*/
+            // Constructs job
+            println!("{}", token.str);
+        }
+    }
 
-struct AST {
-    tokens: vec<Dictionary>,
-
+    pub fn run() {
+        // Print something
+        // Run commands
+    }
 }

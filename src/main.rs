@@ -1,18 +1,14 @@
 mod lexer;
+mod parser;
 
 use std::io;
 use io::Write;
-use lexer::Dictionary;
-// use lexer::Token;
-use logos::{Logos};
-use lexer::Command;
+use parser::Job;
 
 fn main() {
     let mut buffer = String::new();
 
     loop {
-        let mut cmd : Command = Command::new();
-
         print!("$ ");
         io::stdout().flush()
             .expect("flush stdout");
@@ -20,24 +16,7 @@ fn main() {
         io::stdin().read_line(&mut buffer)
             .expect("read user input");
 
-        // Perform lexical analysis of input string
-        let mut lex = Dictionary::lexer(&buffer);
-        // let mut token_type : Dictionary = Dictionary::Text;
-        // while let Some(_) = lex.next() {
-        //     // println!("{}", lex.slice())
-        //     cmd.add_token(lex.slice(), lex.next());
-        // }
-        // let mut itr;
-        // while let end = (itr = lex.next())
-        // {            
-        // }
-        let mut rdr = Dictionary::lexer(&buffer);
-        while let Some(_) = lex.next()
-        {
-            cmd.add_token(lex.slice(), rdr.next());
-        }
-            
-        cmd.execute();
+        let mut parser = Job::parse(&buffer);
 
         // Clear buffer string
         // More efficient than deleting and reallocating every loop
