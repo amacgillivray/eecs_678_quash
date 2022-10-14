@@ -16,7 +16,7 @@ struct Token {
 
 pub struct Job {
     foreground: bool,
-    cmds: Vec<Command> // Commands separated by pipes
+    cmds: Vec<Command>, // Commands separated by pipes
 }
 
 impl Job {
