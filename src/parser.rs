@@ -22,6 +22,10 @@ impl Command {
             append: None,
         }
     }
+
+    fn print(&self) {
+
+    }
 }
 
 struct Token {
@@ -35,49 +39,68 @@ pub struct Job {
 }
 
 impl Job {
+    pub fn new() -> Job {
+        Job { 
+            foreground: true, 
+            cmds: Vec::<Command>::new() 
+        }
+    }
+
+
     pub fn parse(&mut self, str: &String) {
-        let mut cmd = Command::new();
+        self.cmds.push(Command::new());
+        let mut cmd: &mut Command = self.cmds.last_mut().unwrap();
 
         let mut lex = Dictionary::lexer(&str);
         while let Some(cat) = lex.next() {
+            // Create token object from lexer
             let token = Token{
                 cat: cat,
                 str: lex.slice().to_string(),
             };
 
+            // Expecting a new command
             if (cmd.keyword.cat == Dictionary::Error)
             && (token.cat < Dictionary::Quit) {
                 cmd.keyword = token;
                 continue;
             }
 
+            // Expecting arguments / operators to the command
             match token.cat {
                 Dictionary::Text => cmd.args.push(token),
                 Dictionary::LANGLE => cmd.read = Some(Token{
-                    cat: lex.next(),
+                    cat: lex.next().unwrap(),
                     str: lex.slice().to_string(),
                 }),
                 Dictionary::RANGLE => cmd.write = Some(Token{
-                    cat: lex.next(),
+                    cat: lex.next().unwrap(),
                     str: lex.slice().to_string(),
                 }),
                 Dictionary::DRANGLE => cmd.append = Some(Token{
-                    cat: lex.next(),
+                    cat: lex.next().unwrap(),
                     str: lex.slice().to_string(),
                 }),
-                Dictionary::AMPERSAND => self.foreground = false,
-                _ => {
-                    self.cmds.push(cmd);
-                    cmd = Command::new();
-                    cmd.keyword = token;
+                Dictionary::AMPERSAND => {
+                    self.foreground = false;
+                    break;
+                },
+                _ => { // Pipe or unknown token
+                    self.cmds.push(Command::new());
+                    cmd = self.cmds.last_mut().unwrap();
                 }
             }
-
-            self.cmds.push(cmd);
         }
     }
 
-    pub fn run() {
+    fn print(self) {
+        for cmd in &self.cmds {
+            cmd.print();
+        }
+        println!("Runs in foreground: {}", self.foreground);
+    }
+
+    fn run() {
         // Print something
         // Run commands
     }

@@ -16,7 +16,8 @@ fn main() {
         io::stdin().read_line(&mut buffer)
             .expect("read user input");
 
-        let mut parser = Job::parse(&buffer);
+        let mut parser = Job::new();
+        parser.parse(&buffer);
 
         // Clear buffer string
         // More efficient than deleting and reallocating every loop

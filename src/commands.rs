@@ -32,11 +32,7 @@ fn cd() {
 
 }
 
-fn ls() {
-
-}
-
-fn kill() {
+fn pwd() {
 
 }
 
@@ -44,7 +40,7 @@ fn jobs() {
 
 }
 
-fn cat() {
+fn kill() {
 
 }
 

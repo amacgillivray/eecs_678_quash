@@ -1,6 +1,6 @@
 use logos::Logos;
 
-#[derive(Logos, PartialEq, Debug)]
+#[derive(Logos, PartialEq, PartialOrd, Debug)]
 pub enum Dictionary {
 
     // Text
