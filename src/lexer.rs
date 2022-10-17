@@ -42,7 +42,7 @@ pub enum Dictionary {
     #[regex(">>")] // Append to file
     DRANGLE,
 
-    #[token("[|]")] // Pipes output of one to input of next
+    #[token("|")] // Pipes output of one to input of next
     PIPE,
 
     #[regex("&")] // Run in background
