@@ -1,6 +1,7 @@
 use logos::Logos;
 use crate::lexer::Dictionary;
 
+#[derive(Debug)]
 struct Command {
     keyword: Token, // Type of command,
     args: Vec<Token>,
@@ -22,17 +23,15 @@ impl Command {
             append: None,
         }
     }
-
-    fn print(&self) {
-
-    }
 }
 
+#[derive(Debug)]
 struct Token {
     cat: Dictionary,
     str: String,
 }
 
+#[derive(Debug)]
 pub struct Job {
     foreground: bool,
     cmds: Vec<Command>, // Commands separated by pipes
@@ -91,13 +90,6 @@ impl Job {
                 }
             }
         }
-    }
-
-    fn print(self) {
-        for cmd in &self.cmds {
-            cmd.print();
-        }
-        println!("Runs in foreground: {}", self.foreground);
     }
 
     fn run() {

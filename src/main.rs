@@ -19,6 +19,8 @@ fn main() {
         let mut parser = Job::new();
         parser.parse(&buffer);
 
+        println!("{:?}", parser);
+
         // Clear buffer string
         // More efficient than deleting and reallocating every loop
         buffer.clear();
