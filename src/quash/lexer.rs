@@ -59,3 +59,9 @@ pub enum Dictionary {
     #[error] // Oops! Bad syntax
     Error
 }
+
+#[derive(Debug)]
+pub struct Token {
+    pub cat: Dictionary,
+    pub str: String,
+}

@@ -1,30 +1,8 @@
-mod lexer;
-mod parser;
-
-use std::io;
-use io::Write;
-use parser::Job;
+mod quash;
+use quash::Quash;
 
 fn main() {
-    let mut buffer = String::new();
-
-    loop {
-        print!("$ ");
-        io::stdout().flush()
-            .expect("flush stdout");
-
-        io::stdin().read_line(&mut buffer)
-            .expect("read user input");
-
-        let mut parser = Job::new();
-        parser.parse(&buffer);
-
-        println!("{:?}", parser);
-
-        // Clear buffer string
-        // More efficient than deleting and reallocating every loop
-        buffer.clear();
-    }
+    Quash::new().run();
 }
 /* Commands to implement
     * Executables

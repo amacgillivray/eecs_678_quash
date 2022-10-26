@@ -1,51 +1,11 @@
+use super::command::Command;
+use super::lexer::Token;
+use super::Job;
+
 use logos::Logos;
-use crate::lexer::Dictionary;
-
-#[derive(Debug)]
-struct Command {
-    keyword: Token, // Type of command,
-    args: Vec<Token>,
-    read: Option<Token>,
-    write: Option<Token>,
-    append: Option<Token>,
-}
-
-impl Command {
-    pub fn new() -> Command {
-        Command{
-            keyword: Token { 
-                str: String::new(), 
-                cat: Dictionary::Error 
-            },
-            args: Vec::<Token>::new(),
-            read: None,
-            write: None,
-            append: None,
-        }
-    }
-}
-
-#[derive(Debug)]
-struct Token {
-    cat: Dictionary,
-    str: String,
-}
-
-#[derive(Debug)]
-pub struct Job {
-    foreground: bool,
-    cmds: Vec<Command>, // Commands separated by pipes
-}
+use super::lexer::Dictionary;
 
 impl Job {
-    pub fn new() -> Job {
-        Job { 
-            foreground: true, 
-            cmds: Vec::<Command>::new() 
-        }
-    }
-
-
     pub fn parse(&mut self, str: &String) {
         self.cmds.push(Command::new());
         let mut cmd: &mut Command = self.cmds.last_mut().unwrap();
@@ -90,10 +50,5 @@ impl Job {
                 }
             }
         }
-    }
-
-    fn run() {
-        // Print something
-        // Run commands
     }
 }
