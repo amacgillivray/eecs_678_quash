@@ -26,14 +26,14 @@ impl Job {
 }
 
 impl Quash {
-    pub fn run_job(&self, job: &Job) {
+    pub fn run_job(&self, job: Job) {
         // TODO: This is just a placeholder
         for cmd in job.cmds {
             self.exec_cmd(cmd);
         }
     }
 
-    pub fn run_job_bg(&self, job: &Job) {
+    pub fn run_job_bg(&self, job: Job) {
         use nix::unistd::{fork, ForkResult};
 
         // TODO: set job pid

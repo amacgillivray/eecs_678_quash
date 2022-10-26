@@ -20,6 +20,8 @@ impl Job {
                 str: lex.slice().to_string(),
             };
 
+            println!("{:?}", token);
+
             // Expecting a new command
             if (cmd.keyword.cat == Dictionary::Error)
             && (token.cat < Dictionary::Quit) {
@@ -29,7 +31,7 @@ impl Job {
 
             // Expecting arguments / operators to the command
             match token.cat {
-                Dictionary::Text => cmd.args.push(token),
+                Dictionary::Text(_) => cmd.args.push(token),
                 Dictionary::LANGLE => cmd.read = Some(Token{
                     cat: lex.next().unwrap(),
                     str: lex.slice().to_string(),

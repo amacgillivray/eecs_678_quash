@@ -37,9 +37,9 @@ impl Quash {
 
             // Execute the job
             if job.foreground {
-                self.run_job(&job);
+                self.run_job(job);
             } else{
-                self.run_job_bg(&job);
+                self.run_job_bg(job);
             }
             i += 1;
         }

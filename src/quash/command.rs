@@ -95,9 +95,9 @@ impl Command {
     }
     
     pub fn pwd(self) -> PathBuf {
-        use nix::unistd;
+        use std::env;
     
-        return unistd::getcwd().unwrap();
+        env::current_dir().unwrap()
     }
     
     pub fn kill(self) {
