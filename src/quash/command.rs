@@ -1,3 +1,4 @@
+use super::Quash;
 use super::lexer::Token;
 use super::lexer::Dictionary;
 
@@ -10,22 +11,10 @@ pub struct Command {
     pub append: Option<Token>,
 }
 
-impl Command {
-    pub fn new() -> Command {
-        Command{
-            keyword: Token { 
-                str: String::new(), 
-                cat: Dictionary::Error 
-            },
-            args: Vec::<Token>::new(),
-            read: None,
-            write: None,
-            append: None,
-        }
-    }
+impl Quash {
 
-    pub fn exec(self) {
-        match self.keyword.cat {
+    pub fn exec_cmd(self, cmd: Command) {
+        match cmd.keyword.cat {
             Dictionary::Echo => {
 
             },
@@ -42,7 +31,7 @@ impl Command {
 
             },
             Dictionary::Jobs => {
-                // print();
+                self.print();
             },
             Dictionary::Quit => {
                 Command::quit();
@@ -55,6 +44,19 @@ impl Command {
 }
 
 impl Command {
+    pub fn new() -> Command {
+        Command{
+            keyword: Token { 
+                str: String::new(), 
+                cat: Dictionary::Error 
+            },
+            args: Vec::<Token>::new(),
+            read: None,
+            write: None,
+            append: None,
+        }
+    }
+
     pub fn quit() {
         use std::process;
         process::exit(0);

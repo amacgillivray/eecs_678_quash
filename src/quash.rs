@@ -19,7 +19,7 @@ impl Quash {
         }
     }
 
-    pub fn run(self) {
+    pub fn run(&self) {
         let mut i = 0;
         let mut buffer = String::new();
 
@@ -36,18 +36,18 @@ impl Quash {
             buffer.clear();
 
             // Execute the job
-            job.run();
+            if job.foreground {
+                self.run_job(&job);
+            } else{
+                self.run_job_bg(&job);
+            }
             i += 1;
         }
     }
 
     pub fn print(self) {
         for job in self.jobs{
-            println!("[{}] \t {} \t {}",
-                job.id,
-                job.pid,
-                job.str
-            );
+            println!("{}", job.info());
         }
     }
 

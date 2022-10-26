@@ -1,4 +1,4 @@
-use super::command::Command;
+use super::{command::Command, Quash};
 
 #[derive(Debug)]
 pub struct Job {
@@ -20,24 +20,33 @@ impl Job {
         }
     }
 
-    pub fn run(self) {
-        /* Steps for running
-            1. Create process
-            2. Handle input?
-            3. Exec command
-            4. Handle output?
-            5. Background?
-        
-        */
-        
+    pub fn info(self) -> String {
+        format!("[{}]\t{}\t{}", self.id, self.pid, self.str) 
+    }
+}
 
-
-        for cmd in self.cmds {
-            cmd.exec();
+impl Quash {
+    pub fn run_job(&self, job: &Job) {
+        // TODO: This is just a placeholder
+        for cmd in job.cmds {
+            self.exec_cmd(cmd);
         }
     }
 
-    pub fn print(self) {
-        println!("{:?}", self);
+    pub fn run_job_bg(&self, job: &Job) {
+        use nix::unistd::{fork, ForkResult};
+
+        // TODO: set job pid
+
+        match unsafe{fork()} {
+            Ok(ForkResult::Parent { child, .. }) => {},
+            Ok(ForkResult::Child) => {
+                println!("Background job started: {}", job.info());
+                self.run_job(job);
+                Command::quit();
+                println!("Completed: {}", job.info());
+            }
+            Err(_) => println!("Fork failed"),
+         }
     }
 }
