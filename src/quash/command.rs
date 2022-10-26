@@ -42,10 +42,10 @@ impl Command {
 
             },
             Dictionary::Jobs => {
-
+                // print();
             },
             Dictionary::Quit => {
-
+                Command::quit();
             },
             _ => { // Call exec function
                 
@@ -88,9 +88,9 @@ impl Command {
         // return unistd::getcwd().unwrap();
     }
     
-    pub fn jobs() {
+    // pub fn jobs() {
     
-    }
+    // }
     
     // nix::sys::signal::kill
     pub fn kill(pid: i32) {

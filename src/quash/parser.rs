@@ -7,6 +7,8 @@ use super::lexer::Dictionary;
 
 impl Job {
     pub fn parse(&mut self, str: &String) {
+        self.str = str.to_string();
+
         self.cmds.push(Command::new());
         let mut cmd: &mut Command = self.cmds.last_mut().unwrap();
 

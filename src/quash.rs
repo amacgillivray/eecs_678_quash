@@ -41,5 +41,15 @@ impl Quash {
         }
     }
 
+    pub fn print(self) {
+        for job in self.jobs{
+            println!("[{}] \t {} \t {}",
+                job.id,
+                job.pid,
+                job.str
+            );
+        }
+    }
+
 
 }
