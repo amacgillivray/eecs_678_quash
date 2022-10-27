@@ -50,43 +50,55 @@ pub enum Dictionary {
 
     // Commands
 
-    #[regex("echo")]  // Echos the argument to terminal
-    Echo,
+    #[regex("echo", 
+        |lex| lex.slice().to_string())]  // Echos the argument to terminal
+    Echo(String),
 
-    #[regex("export")] // Set val of environment variable
-    Export,
+    #[regex("export", 
+        |lex| lex.slice().to_string())] // Set val of environment variable
+    Export(String),
 
-    #[regex("cd")] // Change directory
-    CD,
+    #[regex("cd", 
+        |lex| lex.slice().to_string())] // Change directory
+    CD(String),
 
-    #[regex("pwd")] // Echo current directory name
-    PWD,
+    #[regex("pwd", 
+        |lex| lex.slice().to_string())] // Echo current directory name
+    PWD(String),
 
-    #[regex("kill")] // Kill a process
-    Kill,
+    #[regex("kill", 
+        |lex| lex.slice().to_string())] // Kill a process
+    Kill(String),
 
-    #[regex("jobs")] // Show all active jobs in quash
-    Jobs,
+    #[regex("jobs", 
+        |lex| lex.slice().to_string())] // Show all active jobs in quash
+    Jobs(String),
 
-    #[regex("quit|exit")] // Exit
-    Quit,
+    #[regex("quit|exit", 
+        |lex| lex.slice().to_string())] // Exit
+    Quit(String),
 
     // Operators
 
-    #[regex("<")] // Take input from file
-    LANGLE,
+    #[regex("<", 
+        |lex| lex.slice().to_string())] // Take input from file
+    LANGLE(String),
 
-    #[regex(">")] // Write to file
-    RANGLE,
+    #[regex(">", 
+        |lex| lex.slice().to_string())] // Write to file
+    RANGLE(String),
 
-    #[regex(">>")] // Append to file
-    DRANGLE,
+    #[regex(">>", 
+        |lex| lex.slice().to_string())] // Append to file
+    DRANGLE(String),
 
-    #[token("|")] // Pipes output of one to input of next
-    PIPE,
+    #[token("|", 
+        |lex| lex.slice().to_string())] // Pipes output of one to input of next
+    PIPE(String),
 
-    #[regex("&")] // Run in background
-    AMPERSAND,
+    #[regex("&", 
+        |lex| lex.slice().to_string())] // Run in background
+    AMPERSAND(String),
 
     // Skipped / Error
 
@@ -98,12 +110,6 @@ pub enum Dictionary {
 
     #[error] // Oops! Bad syntax
     Error
-}
-
-#[derive(Debug)]
-pub struct Token {
-    pub cat: Dictionary,
-    pub str: String,
 }
 
 #[derive(Logos, PartialEq, PartialOrd, Debug)]

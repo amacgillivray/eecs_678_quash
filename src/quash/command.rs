@@ -4,45 +4,46 @@ use std::path::PathBuf;
 use nix::sys::signal::Signal;
 
 use super::Quash;
-use super::lexer::Token;
 use super::lexer::Dictionary;
 
 #[derive(Debug)]
 pub struct Command {
-    pub keyword: Token, // Type of command,
-    pub args: Vec<Token>,
-    pub read: Option<Token>,
-    pub write: Option<Token>,
-    pub append: Option<Token>,
+    pub keyword: Option<Dictionary>, // Type of command,
+    pub args: Vec<String>,
+    pub read: Option<Dictionary>,
+    pub write: Option<Dictionary>,
+    pub append: Option<Dictionary>,
 }
 
 impl Quash {
 
     pub fn exec_cmd(self, cmd: Command) {
-        match cmd.keyword.cat {
-            Dictionary::Echo => {
-                cmd.echo();
-            },
-            Dictionary::Export => {
-                cmd.export();
-            },
-            Dictionary::CD => {
-                cmd.cd();
-            },
-            Dictionary::PWD => {
-                cmd.pwd();
-            },
-            Dictionary::Kill => {
-                cmd.kill();
-            },
-            Dictionary::Jobs => {
-                self.print();
-            },
-            Dictionary::Quit => {
-                Command::quit();
-            },
-            _ => { // Call exec function
-                cmd.execvp();
+        if let Some(ref key) = cmd.keyword {
+            match key {
+                Dictionary::Echo(_) => {
+                    cmd.echo();
+                },
+                Dictionary::Export(_) => {
+                    cmd.export();
+                },
+                Dictionary::CD(_) => {
+                    cmd.cd();
+                },
+                Dictionary::PWD(_) => {
+                    cmd.pwd();
+                },
+                Dictionary::Kill(_) => {
+                    cmd.kill();
+                },
+                Dictionary::Jobs(_) => {
+                    self.print();
+                },
+                Dictionary::Quit(_) => {
+                    Command::quit();
+                },
+                _ => { // Call exec function
+                    cmd.execvp();
+                }
             }
         }
     }
@@ -51,11 +52,8 @@ impl Quash {
 impl Command {
     pub fn new() -> Command {
         Command{
-            keyword: Token { 
-                str: String::new(), 
-                cat: Dictionary::Error 
-            },
-            args: Vec::<Token>::new(),
+            keyword: None,
+            args: Vec::<String>::new(),
             read: None,
             write: None,
             append: None,
@@ -71,14 +69,27 @@ impl Command {
     
     pub fn execvp(self) {
         use nix::unistd::execvp;
+
+        let filename: Option<CString>;
+        if let Some(s) = self.keyword {
+            match s {
+                Dictionary::Text(binary) => filename = CString::new(binary).ok(),
+                _ => filename = None,
+            }
+        }
+
+        let args: Vec<CString> = self.args.iter()
+            .map(|arg| CString::new(arg.as_str()).unwrap())
+            .collect();
     
-        // execvp(&CString::new(binary), &args[..]);
-        // TODO
+        if let Some(binary) = filename {
+            execvp(&binary, &args[..]);
+        }
     }
     
     pub fn echo(self) {
         for txt in &self.args {
-            println!("{}", txt.str);
+            println!("{}", txt);
         }
     }
     
@@ -90,7 +101,7 @@ impl Command {
         let mut key: Option<&str> = None;
         let mut val: Option<&str>;
 
-        let mut lex = SetVar::lexer(&self.args[0].str);
+        let mut lex = SetVar::lexer(&self.args[0]);
         while let Some(_) = lex.next() {
             val = key;
             key = Some(lex.slice());
@@ -105,7 +116,7 @@ impl Command {
     }
     
     pub fn cd(self) {
-        let path: &str = &self.args[0].str;
+        let path: &str = &self.args[0];
 
         use nix::unistd::chdir;
         chdir(path);
@@ -119,8 +130,8 @@ impl Command {
     
     pub fn kill(self) {
         let pid: Pid = Pid::from_raw(
-            self.args[0].str.parse().unwrap());
-        let sig: Signal = self.args[1].str.parse().unwrap();
+            self.args[0].parse().unwrap());
+        let sig: Signal = self.args[1].parse().unwrap();
 
         use nix::unistd::Pid;
         nix::sys::signal::kill(pid, sig);

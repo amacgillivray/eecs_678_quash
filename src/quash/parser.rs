@@ -1,5 +1,4 @@
 use super::command::Command;
-use super::lexer::Token;
 use super::Job;
 
 use logos::Logos;
@@ -13,46 +12,30 @@ impl Job {
         let mut cmd: &mut Command = self.cmds.last_mut().unwrap();
 
         let mut lex = Dictionary::lexer(&str);
-        while let Some(cat) = lex.next() {
-            // Create token object from lexer
-            let token = Token{
-                cat: cat,
-                str: lex.slice().to_string(),
-            };
+        while let Some(token) = lex.next() {
 
             println!("{:?}", token);
 
-            // Expecting a new command
-            if (cmd.keyword.cat == Dictionary::Error)
-            && (token.cat < Dictionary::Quit) {
-                cmd.keyword = token;
-                continue;
-            }
-
             // Expecting arguments / operators to the command
-            match token.cat {
-                Dictionary::Text(_) => cmd.args.push(token),
-                Dictionary::LANGLE => cmd.read = Some(Token{
-                    cat: lex.next().unwrap(),
-                    str: lex.slice().to_string(),
-                }),
-                Dictionary::RANGLE => cmd.write = Some(Token{
-                    cat: lex.next().unwrap(),
-                    str: lex.slice().to_string(),
-                }),
-                Dictionary::DRANGLE => cmd.append = Some(Token{
-                    cat: lex.next().unwrap(),
-                    str: lex.slice().to_string(),
-                }),
-                Dictionary::AMPERSAND => {
-                    self.foreground = false;
-                    break;
-                },
-                _ => { // Pipe or unknown token
-                    self.cmds.push(Command::new());
-                    cmd = self.cmds.last_mut().unwrap();
+            if let Some(_) = cmd.keyword {
+                match token {
+                    Dictionary::Text(txt) => cmd.args.push(txt),
+                    Dictionary::LANGLE(_) => cmd.read = Some(lex.next().unwrap()),
+                    Dictionary::RANGLE(_) => cmd.write = Some(lex.next().unwrap()),
+                    Dictionary::DRANGLE(_) => cmd.append = Some(lex.next().unwrap()),
+                    Dictionary::AMPERSAND(_) => {
+                        self.foreground = false;
+                        break;
+                    },
+                    _ => { // Pipe or unknown token
+                        self.cmds.push(Command::new());
+                        cmd = self.cmds.last_mut().unwrap();
+                    }
                 }
+            } else {
+                cmd.keyword = Some(token);
             }
+            
         }
     }
 }

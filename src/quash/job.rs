@@ -33,7 +33,7 @@ impl Quash {
         }
     }
 
-    pub fn run_job_bg(&self, job: Job) {
+    pub fn run_job_bg(&self, job: &Job) {
         use nix::unistd::{fork, ForkResult};
 
         // TODO: set job pid
