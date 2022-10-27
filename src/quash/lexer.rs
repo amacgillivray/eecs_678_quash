@@ -111,7 +111,7 @@ pub enum SetVar {
     #[regex("[^ =\n\r\t]+")] // arguments, or executable
     Text,
 
-    #[regex("[=]")] // assignment op
+    #[regex("[=]", logos::skip)] // assignment op
     EQUAL,
 
     #[error] // Oops! Bad syntax

@@ -77,14 +77,31 @@ impl Command {
     }
     
     pub fn echo(self) {
-    
-        // TODO
-    
+        for txt in &self.args {
+            println!("{}", txt.str);
+        }
     }
     
     pub fn export(self) {
+        use logos::Logos;
+        use super::lexer::SetVar; 
         use std::env;
-        // TODO
+
+        let mut key: Option<&str> = None;
+        let mut val: Option<&str>;
+
+        let mut lex = SetVar::lexer(&self.args[0].str);
+        while let Some(_) = lex.next() {
+            val = key;
+            key = Some(lex.slice());
+
+            match (key, val) {
+                (Some(k), Some(v)) => {
+                    env::set_var(k, v);
+                },
+                _ => (),
+            }
+        }
     }
     
     pub fn cd(self) {
