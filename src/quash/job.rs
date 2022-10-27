@@ -56,7 +56,7 @@ impl Quash {
         // TODO: set job pid
 
         match unsafe{fork()} {
-            Ok(ForkResult::Parent { child, .. }) => {},
+            Ok(ForkResult::Parent { .. }) => {},
             Ok(ForkResult::Child) => {
                 println!("Background job started: {}", job.info());
                 self.run_job(job);
