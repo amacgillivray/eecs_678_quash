@@ -20,18 +20,18 @@ impl Job {
         }
     }
 
-    pub fn info(self) -> String {
+    pub fn info(&self) -> String {
         format!("[{}]\t{}\t{}", self.id, self.pid, self.str) 
     }
 }
 
 impl Quash {
-    pub fn run_job(&self, job: Job) {
+    pub fn run_job(&self, job: &Job) {
         
         // Init empty stdin
         // Init empty stdout
 
-        for cmd in job.cmds {
+        for cmd in &job.cmds[..] {
 
             // if read:
                 // Override stdin input
@@ -41,8 +41,8 @@ impl Quash {
                 // Override stdout with file
             
             // Always override stdout
-            
-            self.exec_cmd(cmd);
+
+            self.exec_cmd(&cmd);
 
             // Stdout => stdin fof next
         }
@@ -50,7 +50,7 @@ impl Quash {
         // Println stdout
     }
 
-    pub fn run_job_bg(&self, job: &Job) {
+    pub fn run_job_bg(&self, job: &mut Job) {
         use nix::unistd::{fork, ForkResult};
 
         // TODO: set job pid

@@ -37,16 +37,18 @@ impl Quash {
 
             // Execute the job
             if job.foreground {
-                self.run_job(job);
+                self.run_job(&job);
             } else{
-                self.run_job_bg(job);
+                self.run_job_bg(&mut job);
             }
+
+            // TODO: Remove job from jobs after exec
             i += 1;
         }
     }
 
-    pub fn print(self) {
-        for job in self.jobs{
+    pub fn print(&self) {
+        for job in &self.jobs[..] {
             println!("{}", job.info());
         }
     }
