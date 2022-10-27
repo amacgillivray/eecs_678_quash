@@ -122,10 +122,11 @@ impl Command {
         chdir(path);
     }
     
-    pub fn pwd(self) -> PathBuf {
+    pub fn pwd(self) {
         use std::env;
     
-        env::current_dir().unwrap()
+        let path = env::current_dir().unwrap();
+        println!("{}", path.display());        
     }
     
     pub fn kill(self) {
@@ -135,18 +136,5 @@ impl Command {
 
         use nix::unistd::Pid;
         nix::sys::signal::kill(pid, sig);
-    }
-    
-    /* Higher level abstractions */
-    
-    pub fn pipe() {
-    
-    }
-    
-    pub fn redirect_io() {
-    
-    }
-    
-    pub fn background() {
     }
 }

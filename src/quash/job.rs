@@ -27,10 +27,27 @@ impl Job {
 
 impl Quash {
     pub fn run_job(&self, job: Job) {
-        // TODO: This is just a placeholder
+        
+        // Init empty stdin
+        // Init empty stdout
+
         for cmd in job.cmds {
+
+            // if read:
+                // Override stdin input
+                // nix::unistd::dup2
+
+            // if write / append
+                // Override stdout with file
+            
+            // Always override stdout
+            
             self.exec_cmd(cmd);
+
+            // Stdout => stdin fof next
         }
+
+        // Println stdout
     }
 
     pub fn run_job_bg(&self, job: &Job) {
