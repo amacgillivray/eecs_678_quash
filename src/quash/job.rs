@@ -1,9 +1,13 @@
+use std::process;
+use nix::sys::signal::{Signal, SigSet};
+use nix::unistd::Pid;
+
 use super::{command::Command, Quash};
 
 #[derive(Debug)]
 pub struct Job {
     pub id: i32,
-    pub pid: i32,
+    pub pid: u32,
     pub foreground: bool,
     pub cmds: Vec<Command>, // Commands separated by pipes
     pub str: String,
@@ -13,7 +17,7 @@ impl Job {
     pub fn new(id: i32) -> Job {
         Job { 
             id: id,
-            pid: -1,
+            pid: process::id(),
             foreground: true, 
             cmds: Vec::<Command>::new(), 
             str: String::new(),
@@ -53,17 +57,26 @@ impl Quash {
     pub fn run_job_bg(&self, job: &mut Job) {
         use nix::unistd::{fork, ForkResult};
 
-        // TODO: set job pid
-
         match unsafe{fork()} {
-            Ok(ForkResult::Parent { .. }) => {},
+            Ok(ForkResult::Parent { .. }) => {
+                let mut sig = SigSet::empty();
+                sig.add(Signal::SIGUSR1);
+                sig.wait().unwrap();
+            },
             Ok(ForkResult::Child) => {
+                let parent = job.pid;
+
+                job.pid = process::id();
                 println!("Background job started: {}", job.info());
                 self.run_job(job);
-                Command::quit();
+
+                // Notify parent that job started
+                nix::sys::signal::kill(Pid::from_raw(parent.try_into().unwrap()), Signal::SIGUSR1).unwrap();
+
                 println!("Completed: {}", job.info());
+                Command::quit();
             }
             Err(_) => println!("Fork failed"),
-         }
+        }
     }
 }
