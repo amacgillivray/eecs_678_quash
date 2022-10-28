@@ -1,6 +1,6 @@
 use std::os::unix::prelude::AsRawFd;
 use std::process;
-use std::io;
+use std::io::{self, Read, *};
 use std::fs::File;
 use nix::sys::signal::{Signal, SigSet};
 use nix::unistd::Pid;
@@ -53,7 +53,17 @@ impl Quash {
                 // Override stdout with file
             if cmd.write != None {
                 let mut file = File::create(&cmd.args[0]).expect("Error: Unable to open file.");
-                let mut outputs = "";
+                let mut line = String::new();
+                // not sure how to read the line here, this does not compile
+                while let Ok(n_bytes) = stdout.read_to_string(&mut line) {
+                    if n_bytes == 0 { break }
+                    file.write_all(line.as_bytes());
+                    line.clear();
+                }
+                // for line in stdout.lock().lines() {
+                //     let line = line.expect("Failed to read line");
+                //     file.write(line);
+                // }
 
                 // for line :
                 // file.write_all(stdout);
