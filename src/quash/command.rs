@@ -69,23 +69,36 @@ impl Command {
     
     pub fn execvp(&self) { // TODO: this needs to be forked to run in seperate process
         use nix::unistd::execvp;
+        use nix::unistd::ForkResult::{Child, Parent};
+        use nix::unistd::{fork, getpid, getppid};
+        
+        unsafe {
+            let pid = fork();
 
-        let mut filename: Option<CString> = None;
-        if let Some(s) = &self.keyword {
-            match s {
-                Dictionary::Text(binary) => {
-                    filename = CString::new(binary.clone()).ok()
+            match pid.expect("Fork Failed: Unable to create child process!") {
+                Child => {
+                    let mut filename: Option<CString> = None;
+                    if let Some(s) = &self.keyword {
+                        match s {
+                            Dictionary::Text(binary) => {
+                                filename = CString::new(binary.clone()).ok()
+                            },
+                            _ => (),
+                        }
+                    }
+
+                    let args: Vec<CString> = self.args.iter()
+                        .map(|arg| CString::new(arg.as_str()).unwrap())
+                        .collect();
+                
+                    if let Some(binary) = filename {
+                        execvp(&binary, &args[..]).unwrap();
+                    }
                 },
-                _ => (),
+                Parent { child } => {
+                    return;
+                }
             }
-        }
-
-        let args: Vec<CString> = self.args.iter()
-            .map(|arg| CString::new(arg.as_str()).unwrap())
-            .collect();
-    
-        if let Some(binary) = filename {
-            execvp(&binary, &args[..]).unwrap();
         }
     }
     
