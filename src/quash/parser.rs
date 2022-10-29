@@ -13,9 +13,6 @@ impl Job {
 
         let mut lex = Dictionary::lexer(&str);
         while let Some(token) = lex.next() {
-
-            println!("{:?}", token);
-
             // Expecting arguments / operators to the command
             if let Some(_) = cmd.keyword {
                 match token {

@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 logos = "0.12.1"
 nix = "0.25.0"
+stdio-override = "0.1"

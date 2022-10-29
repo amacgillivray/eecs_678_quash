@@ -1,7 +1,10 @@
+use std::fs::OpenOptions;
 use std::process;
 use nix::sys::signal::{Signal, SigSet};
 use nix::unistd::Pid;
+use stdio_override::{StdoutOverride, StdinOverride};
 
+use super::lexer::Dictionary;
 use super::{command::Command, Quash};
 
 #[derive(Debug)]
@@ -31,18 +34,59 @@ impl Job {
 
 impl Quash {
     pub fn run_job(&self, job: &Job) {
-        
-        // Init empty stdin
-        // Init empty stdout
+        let mut read_guard: Option<stdio_override::StdinOverrideGuard> = None;
+        let mut write_guard: Option<stdio_override::StdoutOverrideGuard> = None;
+        let mut append_guard: Option<stdio_override::StdoutOverrideGuard> = None;
 
         for cmd in &job.cmds[..] {
 
-            // if read:
-                // Override stdin input
-                // nix::unistd::dup2
+            if let Some(file) = &cmd.read {
+                match file {
+                    Dictionary::Text(txt) => {
+                        println!("Read from file: {txt}");
 
-            // if write / append
-                // Override stdout with file
+                        OpenOptions::new()
+                            .read(true)
+                            .open(txt)
+                            .unwrap();
+                        read_guard = StdinOverride::override_file(txt).ok();
+                    },
+                    _ => panic!("Error getting file")
+                }
+            }
+
+            if let Some(file) = &cmd.write {
+                match file {
+                    Dictionary::Text(txt) => {
+                        println!("Write to file: {txt}");
+
+                        OpenOptions::new()
+                            .write(true)
+                            .truncate(true)
+                            .create(true)
+                            .open(txt)
+                            .unwrap();
+                        write_guard = StdoutOverride::override_file(txt).ok();
+                    },
+                    _ => panic!("Error getting file")
+                }
+            }
+
+            if let Some(file) = &cmd.append {
+                match file {
+                    Dictionary::Text(txt) => {
+                        println!("Append to file: {txt}");
+
+                        OpenOptions::new()
+                            .append(true)
+                            .create(true)
+                            .open(txt)
+                            .unwrap();
+                        append_guard = StdoutOverride::override_file(txt).ok();
+                    },
+                    _ => panic!("Error getting file")
+                }
+            }
             
             // Always override stdout
 
@@ -50,6 +94,10 @@ impl Quash {
 
             // Stdout => stdin fof next
         }
+
+        drop(read_guard);
+        drop(write_guard);
+        drop(append_guard);
 
         // Println stdout
     }
