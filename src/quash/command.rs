@@ -91,6 +91,7 @@ impl Command {
             }
             Ok(ForkResult::Child) => {
                 if let Some(binary) = filename {
+                    println!("{:?}", &args[..]);
                     execvp(&binary, &args[..]).unwrap();
                 }
             }
