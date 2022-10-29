@@ -2,8 +2,7 @@ use std::fs::OpenOptions;
 use std::process;
 use nix::sys::signal::{Signal, SigSet};
 use nix::unistd::Pid;
-use stdio_override::{StdoutOverride, StdinOverride};
-
+use stdio_override::{StdinOverride, StdoutOverride};
 use super::lexer::Dictionary;
 use super::{command::Command, Quash};
 
@@ -33,23 +32,27 @@ impl Job {
 }
 
 impl Quash {
-    pub fn run_job(&self, job: &Job) {
-        let mut read_guard: Option<stdio_override::StdinOverrideGuard> = None;
-        let mut write_guard: Option<stdio_override::StdoutOverrideGuard> = None;
-        let mut append_guard: Option<stdio_override::StdoutOverrideGuard> = None;
 
-        for cmd in &job.cmds[..] {
+    pub fn run_job(&self, job: &Job) {
+
+        let mut file_in = ".tmp_in";
+
+        for (i, cmd) in job.cmds.iter().enumerate() {
+            let mut file_out = ".tmp_out";
+
+            let mut read_guard: Option<stdio_override::StdinOverrideGuard> = None;
+            let mut write_guard: Option<stdio_override::StdoutOverrideGuard> = None;
+            let mut append_guard: Option<stdio_override::StdoutOverrideGuard> = None;
+
+            let mut read = false;
+            let mut write = false;
 
             if let Some(file) = &cmd.read {
                 match file {
                     Dictionary::Text(txt) => {
-                        println!("Read from file: {txt}");
-
-                        OpenOptions::new()
-                            .read(true)
-                            .open(txt)
-                            .unwrap();
-                        read_guard = StdinOverride::override_file(txt).ok();
+                        // println!("Read from file: {txt}");
+                        file_in = txt;
+                        read = true;
                     },
                     _ => panic!("Error getting file")
                 }
@@ -58,15 +61,10 @@ impl Quash {
             if let Some(file) = &cmd.write {
                 match file {
                     Dictionary::Text(txt) => {
-                        println!("Write to file: {txt}");
+                        // println!("Write to file: {txt}");
 
-                        OpenOptions::new()
-                            .write(true)
-                            .truncate(true)
-                            .create(true)
-                            .open(txt)
-                            .unwrap();
-                        write_guard = StdoutOverride::override_file(txt).ok();
+                        file_out = txt;
+                        write = true;
                     },
                     _ => panic!("Error getting file")
                 }
@@ -75,7 +73,7 @@ impl Quash {
             if let Some(file) = &cmd.append {
                 match file {
                     Dictionary::Text(txt) => {
-                        println!("Append to file: {txt}");
+                        // println!("Append to file: {txt}");
 
                         OpenOptions::new()
                             .append(true)
@@ -87,19 +85,33 @@ impl Quash {
                     _ => panic!("Error getting file")
                 }
             }
-            
-            // Always override stdout
 
-            self.exec_cmd(&cmd);
+            if (i > 0) || read {
+                OpenOptions::new()
+                    .read(true)
+                    .open(file_in)
+                    .unwrap();
+                read_guard = StdinOverride::override_file(file_in).ok();
+            }
 
-            // Stdout => stdin fof next
+            if (i < job.cmds.iter().len() - 1) || write {
+                OpenOptions::new()
+                    .write(true)
+                    .truncate(true)
+                    .create(true)
+                    .open(file_out)
+                    .unwrap();
+                write_guard = StdoutOverride::override_file(file_out).ok();
+            }
+
+            self.exec_cmd(cmd);
+
+            file_in = file_out;
+
+            drop(read_guard);
+            drop(write_guard);
+            drop(append_guard);
         }
-
-        drop(read_guard);
-        drop(write_guard);
-        drop(append_guard);
-
-        // Println stdout
     }
 
     pub fn run_job_bg(&self, job: &mut Job) {

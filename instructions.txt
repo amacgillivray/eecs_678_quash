@@ -1,1 +1,15 @@
-Haven't filled this out. Explore autogenerating it.
+Running 'make quash' seems to work find standalone.
+
+This is copied from cargo.toml
+
+[package]
+name = "quash"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+logos = "0.12.1"
+nix = "0.25.0"
+stdio-override = "0.1"

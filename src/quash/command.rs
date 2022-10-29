@@ -1,6 +1,9 @@
 use std::ffi::CString;
+use std::io::Write;
+use std::process::Command as cmd;
 use std::path::PathBuf;
-
+use std::fs::OpenOptions;
+use stdio_override::{StdoutOverride, StdinOverride};
 use nix::sys::signal::Signal;
 
 use super::Quash;
@@ -18,6 +21,7 @@ pub struct Command {
 impl Quash {
 
     pub fn exec_cmd(&self, cmd: &Command) {
+
         if let Some(ref key) = cmd.keyword {
             match key {
                 Dictionary::Echo(_) => {
@@ -67,15 +71,17 @@ impl Command {
     
     // Commands
     
-    pub fn execvp(&self) { // TODO: this needs to be forked to run in seperate process
+    pub fn execvp(&self) {
         use nix::unistd::execvp;
         use nix::{sys::wait::waitpid,unistd::{fork, ForkResult}};
         
         let mut filename: Option<CString> = None;
+        // let mut filename: String = String::new();
         if let Some(s) = &self.keyword {
             match s {
                 Dictionary::Text(binary) => {
                     filename = CString::new(binary.clone()).ok()
+                    // filename = binary.to_string();
                 },
                 _ => (),
             }
@@ -91,12 +97,19 @@ impl Command {
             }
             Ok(ForkResult::Child) => {
                 if let Some(binary) = filename {
-                    println!("{:?}", &args[..]);
                     execvp(&binary, &args[..]).unwrap();
                 }
             }
             Err(_) => println!("Fork failed"),
         }
+
+        // let res = cmd::new(filename)
+        //     .args(&self.args[..])
+        //     .output()
+        //     .expect("failed to execute process");
+
+        // std::io::stdout().write_all(&res.stdout).unwrap();
+
     }
     
     pub fn echo(&self) {
